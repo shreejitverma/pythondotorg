@@ -54,10 +54,7 @@ class EventIndex(indexes.SearchIndex, indexes.Indexable):
         return striptags(truncatewords_html(obj.description.rendered, 50))
 
     def prepare_venue(self, obj):
-        if obj.venue:
-            return obj.venue.name
-        else:
-            return None
+        return obj.venue.name if obj.venue else None
 
     def prepare(self, obj):
         """ Boost events """

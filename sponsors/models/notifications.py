@@ -22,15 +22,13 @@ class SponsorEmailNotificationTemplate(BaseEmailTemplate):
 
     def get_email_context_data(self, **kwargs):
         sponsorship = kwargs.pop("sponsorship")
-        context = {
+        return {
             "sponsor_name": sponsorship.sponsor.name,
             "sponsorship_start_date": sponsorship.start_date,
             "sponsorship_end_date": sponsorship.end_date,
             "sponsorship_status": sponsorship.status,
             "sponsorship_level": sponsorship.level_name,
-        }
-        context.update(kwargs)
-        return context
+        } | kwargs
 
     def get_email_message(self, sponsorship, **kwargs):
         contact_types = {

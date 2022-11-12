@@ -152,11 +152,9 @@ class Contract(models.Model):
         Factory method to create a new Contract from a Sponsorship
         """
         sponsor = sponsorship.sponsor
-        primary_contact = sponsor.primary_contact
-
         sponsor_info = f"{sponsor.name}, {sponsor.description}"
         sponsor_contact = ""
-        if primary_contact:
+        if primary_contact := sponsor.primary_contact:
             sponsor_contact = f"{primary_contact.name} - {primary_contact.phone} | {primary_contact.email}"
 
         benefits = sponsorship.benefits.all()
@@ -182,7 +180,7 @@ class Contract(models.Model):
             sponsorship=sponsorship,
             sponsor_info=sponsor_info,
             sponsor_contact=sponsor_contact,
-            benefits_list="\n".join([b for b in benefits_list]),
+            benefits_list="\n".join(list(benefits_list)),
             legal_clauses=legal_clauses_text,
         )
 

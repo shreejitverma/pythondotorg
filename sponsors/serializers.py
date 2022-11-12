@@ -40,7 +40,7 @@ class AssetSerializer(serializers.ModelSerializer):
     def get_value(self, asset):
         if not asset.has_value:
             return ""
-        return asset.value if not asset.is_file else asset.value.url
+        return asset.value.url if asset.is_file else asset.value
 
     def get_sponsor(self, asset):
         return self._get_sponsor_object(asset).name
@@ -70,10 +70,7 @@ class FilterLogoPlacementsSerializer(serializers.Serializer):
     def skip_logo(self, logo):
         if self.by_publisher and self.by_publisher != logo.publisher:
             return True
-        if self.by_flight and self.by_flight != logo.logo_place:
-            return True
-        else:
-            return False
+        return bool(self.by_flight and self.by_flight != logo.logo_place)
 
 
 class FilterAssetsSerializer(serializers.Serializer):

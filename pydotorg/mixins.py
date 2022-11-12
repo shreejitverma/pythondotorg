@@ -67,6 +67,8 @@ class GroupRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         in_group = self.check_membership(self.get_group_required())
-        if not in_group:
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
+        return (
+            super().dispatch(request, *args, **kwargs)
+            if in_group
+            else self.handle_no_permission()
+        )

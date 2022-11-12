@@ -87,10 +87,10 @@ class MembershipForm(ModelForm):
         ]
 
     def clean_psf_code_of_conduct(self):
-        data = self.cleaned_data['psf_code_of_conduct']
-        if not data:
+        if data := self.cleaned_data['psf_code_of_conduct']:
+            return data
+        else:
             raise forms.ValidationError('Agreeing to the code of conduct is required.')
-        return data
 
 
 class MembershipUpdateForm(MembershipForm):

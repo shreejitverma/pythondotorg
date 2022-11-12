@@ -28,10 +28,11 @@ class PageViewTests(BasePageTests):
         Check that redirects still have priority over pages.
         """
         redirect = Redirect.objects.create(
-            old_path='/%s/' % self.p1.path,
+            old_path=f'/{self.p1.path}/',
             new_path='http://redirected.example.com',
-            site=Site.objects.get_current()
+            site=Site.objects.get_current(),
         )
+
         response = self.client.get(redirect.old_path)
         self.assertEqual(response.status_code, 301)
         self.assertEqual(response['Location'], redirect.new_path)

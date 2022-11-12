@@ -114,4 +114,4 @@ class Command(BaseCommand):
                     print(
                         f"Error from PyCon when fullfilling {code_type} for {sponsorbenefit.sponsorship.sponsor.name}: {result}"
                     )
-        print(f"Done!")
+        print("Done!")

@@ -13,11 +13,11 @@ class ContentManageableModelForm(forms.ModelForm):
         obj = super().save(commit=False)
 
         if self.request is not None and self.request.user.is_authenticated:
-            if not obj.pk:
-                obj.creator = self.request.user
-            else:
+            if obj.pk:
                 obj.last_modified_by = self.request.user
 
+            else:
+                obj.creator = self.request.user
         if commit:
             obj.save()
         return obj

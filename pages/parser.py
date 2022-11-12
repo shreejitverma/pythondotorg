@@ -57,11 +57,9 @@ def parse_page(dirpath):
     content = msg.get_payload()
     content_type = determine_page_content_type(content)
 
-    data = {
+    return {
         'headers': dict(msg.items()),
         'content': content,
         'content_type': content_type,
         'filename': filename,
     }
-
-    return data

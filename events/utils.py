@@ -21,20 +21,13 @@ def date_to_datetime(date, tzinfo=None):
 
 
 def extract_date_or_datetime(dt):
-    if isinstance(dt, datetime.datetime):
-        return convert_dt_to_aware(dt)
-    return dt
+    return convert_dt_to_aware(dt) if isinstance(dt, datetime.datetime) else dt
 
 
 def convert_dt_to_aware(dt):
     if not isinstance(dt, datetime.datetime):
         dt = date_to_datetime(dt)
-    if not is_aware(dt):
-        # we don't want to use get_current_timezone() because
-        # settings.TIME_ZONE may be set something different than
-        # UTC in the future
-        return make_aware(dt, timezone=pytz.UTC)
-    return dt
+    return dt if is_aware(dt) else make_aware(dt, timezone=pytz.UTC)
 
 
 def timedelta_nice_repr(timedelta, display='long', sep=', '):
@@ -63,15 +56,18 @@ def timedelta_nice_repr(timedelta, display='long', sep=', '):
     else:
         # Use django template-style formatting.
         # Valid values are d, g, G, h, H, i, s.
-        return re.sub(r'([dgGhHis])', lambda x: '%%(%s)s' % x.group(), display) % {
+        return re.sub(
+            r'([dgGhHis])', lambda x: '%%(%s)s' % x.group(), display
+        ) % {
             'd': days,
             'g': hours,
-            'G': hours if hours > 9 else '0%s' % hours,
+            'G': hours if hours > 9 else f'0{hours}',
             'h': hours,
-            'H': hours if hours > 9 else '0%s' % hours,
-            'i': minutes if minutes > 9 else '0%s' % minutes,
-            's': seconds if seconds > 9 else '0%s' % seconds
+            'H': hours if hours > 9 else f'0{hours}',
+            'i': minutes if minutes > 9 else f'0{minutes}',
+            's': seconds if seconds > 9 else f'0{seconds}',
         }
+
     values = [weeks, days, hours, minutes, seconds]
     for i in range(len(values)):
         if values[i]:
@@ -80,9 +76,9 @@ def timedelta_nice_repr(timedelta, display='long', sep=', '):
             else:
                 result.append('%i%s' % (values[i], words[i]))
     # Values with less than one second, which are considered zeroes.
-    if len(result) == 0:
+    if not result:
         # Display as 0 of the smallest unit.
-        result.append('0%s' % (words[-1]))
+        result.append(f'0{words[-1]}')
     return sep.join(result)
 
 
@@ -106,7 +102,7 @@ def timedelta_parse(string):
         d = d.groupdict(0)
         if d['sign'] == '-':
             for k in 'hours', 'minutes', 'seconds':
-                d[k] = '-' + d[k]
+                d[k] = f'-{d[k]}'
         d.pop('sign', None)
     else:
         # This is the more flexible format.

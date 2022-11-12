@@ -78,16 +78,10 @@ class Story(NameSlugModel, ContentManageable):
 
     def get_company_name(self):
         """ Return company name depending on ForeignKey """
-        if self.company:
-            return self.company.name
-        else:
-            return self.company_name
+        return self.company.name if self.company else self.company_name
 
     def get_company_url(self):
-        if self.company:
-            return self.company.url
-        else:
-            return self.company_url
+        return self.company.url if self.company else self.company_url
 
 
 @receiver(post_save, sender=Story)
@@ -155,12 +149,11 @@ Review URL: {admin_url}
                 author_email=instance.author_email,
                 pull_quote=instance.pull_quote,
                 content=instance.content.raw,
-                admin_url='https://{}{}'.format(
-                    Site.objects.get_current(), instance.get_admin_url()
-                ),
+                admin_url=f'https://{Site.objects.get_current()}{instance.get_admin_url()}',
             ).strip(),
             settings.DEFAULT_FROM_EMAIL,
             PSF_TO_EMAILS,
             reply_to=[instance.author_email],
         )
+
         email.send()

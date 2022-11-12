@@ -30,7 +30,7 @@ class PageFallbackMiddleware:
             page = qs.get(path=full_path)
         except Page.DoesNotExist:
             has_slash = full_path.endswith('/')
-            full_path = full_path[:-1] if has_slash else full_path + '/'
+            full_path = full_path[:-1] if has_slash else f'{full_path}/'
             try:
                 page = qs.get(path=full_path)
             except Page.DoesNotExist:
@@ -38,7 +38,7 @@ class PageFallbackMiddleware:
         if (settings.APPEND_SLASH and page is not None and
             not request.path.endswith('/')):
             scheme = "https" if request.is_secure() else "http"
-            new_path = request.path + '/'
+            new_path = f'{request.path}/'
             new_url = f"{scheme}://{request.get_host()}{new_path}"
             return http.HttpResponsePermanentRedirect(new_url)
         if page is not None:

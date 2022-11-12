@@ -27,8 +27,7 @@ class ElectionDetail(DetailView):
         return election
 
     def get_context_data(self, **kwargs):
-        context = {"election": self.election}
-        return context
+        return {"election": self.election}
 
 
 class NominationMixin:
@@ -64,12 +63,10 @@ class NomineeDetail(NominationMixin, DetailView):
 
     def get_queryset(self):
         election = Election.objects.get(slug=self.kwargs["election"])
-        queryset = Nominee.objects.filter(election=election).select_related()
-        return queryset
+        return Nominee.objects.filter(election=election).select_related()
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        return super().get_context_data(**kwargs)
 
 
 class NominationCreate(LoginRequiredMixin, NominationMixin, CreateView):
@@ -117,8 +114,7 @@ class NominationCreate(LoginRequiredMixin, NominationMixin, CreateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        return super().get_context_data(**kwargs)
 
 
 class NominationEdit(LoginRequiredMixin, NominationMixin, UserPassesTestMixin, UpdateView):
@@ -129,8 +125,7 @@ class NominationEdit(LoginRequiredMixin, NominationMixin, UserPassesTestMixin, U
         return self.request.user == self.get_object().nominator
 
     def get_success_url(self):
-        next_url = self.request.POST.get("next")
-        if next_url:
+        if next_url := self.request.POST.get("next"):
             return next_url
 
         elif self.object.pk:
@@ -143,8 +138,7 @@ class NominationEdit(LoginRequiredMixin, NominationMixin, UserPassesTestMixin, U
             return super().get_success_url()
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        return super().get_context_data(**kwargs)
 
 
 class NominationAccept(LoginRequiredMixin, NominationMixin, UserPassesTestMixin, UpdateView):
@@ -156,8 +150,7 @@ class NominationAccept(LoginRequiredMixin, NominationMixin, UserPassesTestMixin,
         return self.request.user == self.get_object().nominee.user
 
     def get_success_url(self):
-        next_url = self.request.POST.get("next")
-        if next_url:
+        if next_url := self.request.POST.get("next"):
             return next_url
 
         elif self.object.pk:
@@ -170,8 +163,7 @@ class NominationAccept(LoginRequiredMixin, NominationMixin, UserPassesTestMixin,
             return super().get_success_url()
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        return super().get_context_data(**kwargs)
 
 
 class NominationView(DetailView):
@@ -185,9 +177,7 @@ class NominationView(DetailView):
         return self.render_to_response(context)
 
     def get_queryset(self):
-        queryset = Nomination.objects.select_related()
-        return queryset
+        return Nomination.objects.select_related()
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        return super().get_context_data(**kwargs)

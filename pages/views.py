@@ -22,8 +22,7 @@ class PageView(DetailView):
         names = [self.template_name]
 
         if self.object and self.template_name_field:
-            name = getattr(self.object, self.template_name_field, None)
-            if name:
+            if name := getattr(self.object, self.template_name_field, None):
                 names.insert(0, name)
 
         return names
@@ -50,7 +49,7 @@ class PageView(DetailView):
         # See #956 for details.
         matched = re.match(r'/download/releases/([\d.]+)/$', self.request.path)
         if matched is not None:
-            release_slug = 'python-{}'.format(matched.group(1).replace('.', ''))
+            release_slug = f"python-{matched[1].replace('.', '')}"
             try:
                 Release.objects.get(slug=release_slug, release_page__isnull=True)
             except Release.DoesNotExist:

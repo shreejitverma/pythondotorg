@@ -17,9 +17,8 @@ def fix_image_path(src):
     if src.startswith('http'):
         return src
     if not src.startswith('/'):
-        src = '/' + src
-    url = f'{settings.MEDIA_URL}pages{src}'
-    return url
+        src = f'/{src}'
+    return f'{settings.MEDIA_URL}pages{src}'
 
 
 class Command(BaseCommand):
@@ -67,7 +66,7 @@ class Command(BaseCommand):
             )
         wrapper = BeautifulSoup('<div>', 'lxml')
         [wrapper.div.append(el) for el in soup.body.contents]
-        page.content = "%s" % wrapper.div
+        page.content = f"{wrapper.div}"
         page.content_markup_type = 'html'
         page.save()
 
@@ -78,9 +77,11 @@ class Command(BaseCommand):
 
         matches = []
         for root, dirnames, filenames in os.walk(self.SVN_REPO_PATH):
-            for filename in filenames:
-                if re.match(r'(content\.(ht|rst)|body\.html)$', filename):
-                    matches.append(os.path.join(root, filename))
+            matches.extend(
+                os.path.join(root, filename)
+                for filename in filenames
+                if re.match(r'(content\.(ht|rst)|body\.html)$', filename)
+            )
 
         for match in matches:
             path = self._build_path(match)

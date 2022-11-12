@@ -17,7 +17,7 @@ DEFAULT_MARKUP_TYPE = getattr(settings, 'DEFAULT_MARKUP_TYPE', 'markdown')
 
 class CustomUserManager(UserManager):
     def get_by_natural_key(self, username):
-        case_insensitive_username_field = '{}__iexact'.format(self.model.USERNAME_FIELD)
+        case_insensitive_username_field = f'{self.model.USERNAME_FIELD}__iexact'
         return self.get(**{case_insensitive_username_field: username})
 
 
@@ -120,16 +120,13 @@ class Membership(models.Model):
 
     def __str__(self):
         if self.creator:
-            return "Membership for user: %s" % self.creator.username
+            return f"Membership for user: {self.creator.username}"
         else:
             return "Membership '%s'" % self.legal_name
 
     @property
     def higher_level_member(self):
-        if self.membership_type != Membership.BASIC:
-            return True
-        else:
-            return False
+        return self.membership_type != Membership.BASIC
 
     @property
     def needs_vote_affirmation(self):

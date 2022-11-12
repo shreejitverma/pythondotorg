@@ -16,13 +16,7 @@ class Command(BaseCommand):
         date = path_parts[-1]
 
         m = re.match(r'^(\d\d\d\d)-(\d\d)-(\d\d)', date)
-        d = datetime.date(
-            int(m.group(1)),
-            int(m.group(2)),
-            int(m.group(3)),
-        )
-
-        return d
+        return datetime.date(int(m[1]), int(m[2]), int(m[3]))
 
     def handle(self, *args, **kwargs):
         meeting_pages = Page.objects.filter(path__startswith='psf/records/board/minutes/')

@@ -84,8 +84,9 @@ class StoryViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
             mail.outbox[0].subject,
-            'New success story submission: {}'.format(post_data['name'])
+            f"New success story submission: {post_data['name']}",
         )
+
         expected_output = re.compile(
             r'Name: (.*)\n'
             r'Company name: (.*)\n'

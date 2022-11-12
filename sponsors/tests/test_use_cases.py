@@ -322,7 +322,7 @@ class SendSponsorshipNotificationUseCaseTests(TestCase):
 
     @patch.object(SponsorEmailNotificationTemplate, 'get_email_message')
     def test_send_notifications(self, mock_get_email_message):
-        emails = [Mock(EmailMessage, autospec=True) for i in range(3)]
+        emails = [Mock(EmailMessage, autospec=True) for _ in range(3)]
         mock_get_email_message.side_effect = emails
         contact_types = ["administrative"]
 

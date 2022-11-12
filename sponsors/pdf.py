@@ -24,7 +24,7 @@ def _clean_split(text, separator='\n'):
 
 def _contract_context(contract, **context):
     start_date = contract.sponsorship.start_date
-    context.update({
+    context |= {
         "contract": contract,
         "start_date": start_date,
         "start_day_english_suffix": format(start_date, "S"),
@@ -32,7 +32,8 @@ def _contract_context(contract, **context):
         "sponsorship": contract.sponsorship,
         "benefits": _clean_split(contract.benefits_list.raw),
         "legal_clauses": _clean_split(contract.legal_clauses.raw),
-    })
+    }
+
     return context
 
 

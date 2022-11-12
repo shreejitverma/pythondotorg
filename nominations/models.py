@@ -51,18 +51,21 @@ class Election(models.Model):
 
     @property
     def status(self):
-        if self.nominations_open_at is not None and self.nominations_close_at is not None:
-            if not self.nominations_open:
-                if self.nominations_open_at > datetime.datetime.now(datetime.timezone.utc):
-                    return "Nominations Not Yet Open"
+        if self.nominations_open_at is None or self.nominations_close_at is None:
+            return (
+                "Commenced"
+                if self.date >= datetime.date.today()
+                else "Voting Not Yet Begun"
+            )
 
+        if not self.nominations_open:
+            if self.nominations_open_at > datetime.datetime.now(datetime.timezone.utc):
+                return "Nominations Not Yet Open"
+
+            else:
                 return "Nominations Closed"
 
-            return "Nominations Open"
-        else:
-            if self.date >= datetime.date.today():
-                return "Commenced"
-            return "Voting Not Yet Begun"
+        return "Nominations Open"
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -154,13 +157,7 @@ class Nominee(models.Model):
         if self.accepted and self.approved and not self.election.nominations_open:
             return True
 
-        if user is None:
-            return False
-
-        if user.is_staff or user == self.user:
-            return True
-
-        return False
+        return False if user is None else bool(user.is_staff or user == self.user)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -222,14 +219,12 @@ class Nomination(models.Model):
         ):
             return True
 
-        if (
+        return bool(
             user == self.nominator
-            and not (self.accepted or self.approved)
+            and not self.accepted
+            and not self.approved
             and self.election.nominations_open
-        ):
-            return True
-
-        return False
+        )
 
     def visible(self, user=None):
         if self.accepted and self.approved and not self.election.nominations_open_at:
@@ -244,10 +239,7 @@ class Nomination(models.Model):
         if user == self.nominator:
             return True
 
-        if self.nominee and user == self.nominee.user:
-            return True
-
-        return False
+        return bool(self.nominee and user == self.nominee.user)
 
 
 @receiver(post_save, sender=Nomination)

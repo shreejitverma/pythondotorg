@@ -28,9 +28,11 @@ class BaseAPIViewMixin:
     def get_queryset(self):
         # This is equivalent of 'OnlyPublishedAuthorization'
         # in Tastypie.
-        if not self.request.user.is_staff:
-            return self.model.objects.filter(is_published=True)
-        return self.model.objects.all()
+        return (
+            self.model.objects.all()
+            if self.request.user.is_staff
+            else self.model.objects.filter(is_published=True)
+        )
 
 
 class BaseAPIViewSet(BaseAPIViewMixin, viewsets.ModelViewSet):
@@ -91,7 +93,7 @@ class BaseAPITestCase:
         if pk is not None:
             base_url += '%d/' % pk
         if filters is not None:
-            filters = '?' + urlencode(filters)
+            filters = f'?{urlencode(filters)}'
             return urljoin(base_url, filters)
         return base_url
 

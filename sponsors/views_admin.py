@@ -368,9 +368,10 @@ def export_assets_as_zipfile(ModelAdmin, request, queryset):
     if not queryset.exists():
         ModelAdmin.message_user(
             request,
-            f"You have to select at least one asset to export.",
-            messages.WARNING
+            "You have to select at least one asset to export.",
+            messages.WARNING,
         )
+
         return redirect(request.path)
 
     assets_without_values = [asset for asset in queryset if not asset.has_value]

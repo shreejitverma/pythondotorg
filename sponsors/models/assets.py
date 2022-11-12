@@ -60,7 +60,7 @@ class GenericAsset(PolymorphicModel):
 
     @property
     def is_file(self):
-        return isinstance(self.value, FileField) or isinstance(self.value, ImageFieldFile)
+        return isinstance(self.value, (FileField, ImageFieldFile))
 
     @property
     def from_sponsorship(self):

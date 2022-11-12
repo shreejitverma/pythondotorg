@@ -38,9 +38,7 @@ class JobBoardAdminRequiredMixin(GroupRequiredMixin):
     def check_membership(self, group):
         # Add is_staff check to stay compatible with current staff members.
         # is_superuser check is already in base class.
-        if self.request.user.is_staff:
-            return True
-        return super().check_membership(group)
+        return True if self.request.user.is_staff else super().check_membership(group)
 
 
 class JobMixin:
@@ -241,9 +239,7 @@ class JobModerateList(JobReview):
     def get_queryset(self):
         queryset = Job.objects.moderate()
         q = self.request.GET.get('q')
-        if q is not None:
-            return queryset.filter(job_title__icontains=q)
-        return queryset
+        return queryset.filter(job_title__icontains=q) if q is not None else queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -287,11 +283,10 @@ class JobPreview(LoginRequiredMixin, JobDetail, UpdateView):
         POST variables and then checked for validity.
         """
         self.object = self.get_object()
-        if self.request.POST.get('action') == 'review':
-            self.object.review()
-            return HttpResponseRedirect(self.get_success_url())
-        else:
+        if self.request.POST.get('action') != 'review':
             return self.get(request)
+        self.object.review()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_object(self, queryset=None):
         """ Show only approved jobs to the public, staff can see all jobs """
@@ -396,8 +391,7 @@ class JobEdit(LoginRequiredMixin, JobMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        next_url = self.request.POST.get('next')
-        if next_url:
+        if next_url := self.request.POST.get('next'):
             return next_url
         elif self.object.pk:
             return reverse('jobs:job_preview', kwargs={'pk': self.object.id})

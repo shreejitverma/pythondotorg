@@ -172,9 +172,7 @@ class SponsorshipsBenefitsFormTests(TestCase):
             form.errors["__all__"]
         )
 
-        data.update({
-            "package": self.package.id,
-        })
+        data["package"] = self.package.id
         form = SponsorshipsBenefitsForm(data=data)
         self.assertTrue(form.is_valid())
 
@@ -700,7 +698,7 @@ class SendSponsorshipNotificationFormTests(TestCase):
         }
 
     def test_required_fields(self):
-        required_fields = set(["__all__", "contact_types"])
+        required_fields = {"__all__", "contact_types"}
         form = SendSponsorshipNotificationForm({})
         self.assertFalse(form.is_valid())
         self.assertEqual(required_fields, set(form.errors))

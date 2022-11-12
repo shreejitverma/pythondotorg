@@ -41,7 +41,7 @@ class UsersViewsTestCase(TestCase):
             'password2': 'password',
             settings.HONEYPOT_FIELD_NAME: settings.HONEYPOT_VALUE,
         }
-        post_data.update(data or {})
+        post_data |= (data or {})
         url = reverse('account_signup')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -263,10 +263,8 @@ class UsersViewsTestCase(TestCase):
         }
         for i, username in enumerate(usernames):
             with self.subTest(i=i, username=username):
-                post_data.update({
-                    'username': username,
-                    'email': f'foo{i}@example.com'
-                })
+                post_data |= {'username': username, 'email': f'foo{i}@example.com'}
+
                 response = self.client.post(url, post_data, follow=True)
                 self.assertEqual(response.status_code, 200)
                 self.assertTemplateUsed(response, 'account/verification_sent.html')
@@ -287,18 +285,12 @@ class UsersViewsTestCase(TestCase):
         url = reverse('users:user_membership_create')
         response = self.client.get(url)
         # Ensure that an inactive user didn't get logged in.
-        self.assertRedirects(
-            response,
-            '{}?next={}'.format(reverse('account_login'), url)
-        )
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
     def test_user_delete_needs_to_be_logged_in(self):
         url = reverse('users:user_delete', kwargs={'slug': self.user.username})
         response = self.client.delete(url)
-        self.assertRedirects(
-            response,
-            '{}?next={}'.format(reverse('account_login'), url)
-        )
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
     def test_user_delete_invalid_request_method(self):
         url = reverse('users:user_delete', kwargs={'slug': self.user.username})
@@ -323,10 +315,7 @@ class UsersViewsTestCase(TestCase):
     def test_membership_delete_needs_to_be_logged_in(self):
         url = reverse('users:user_membership_delete', kwargs={'slug': self.user2.username})
         response = self.client.delete(url)
-        self.assertRedirects(
-            response,
-            '{}?next={}'.format(reverse('account_login'), url)
-        )
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
     def test_membership_delete_invalid_request_method(self):
         url = reverse('users:user_membership_delete', kwargs={'slug': self.user2.username})
@@ -559,7 +548,7 @@ class UpdateSponsorshipAssetsViewTests(TestCase):
         )
         req_asset = extra_required_text_cfg.create_benefit_feature(self.benefit)
 
-        response = self.client.get(self.url + f"?required_asset={req_asset.pk}")
+        response = self.client.get(f"{self.url}?required_asset={req_asset.pk}")
         form = response.context["form"]
 
         self.assertEqual(1, len(form.fields))

@@ -87,17 +87,11 @@ class EventLocation(models.Model):
 
 class EventManager(models.Manager):
     def for_datetime(self, dt=None):
-        if dt is None:
-            dt = timezone.now()
-        else:
-            dt = convert_dt_to_aware(dt)
+        dt = timezone.now() if dt is None else convert_dt_to_aware(dt)
         return self.filter(Q(occurring_rule__dt_start__gt=dt) | Q(recurring_rules__finish__gt=dt))
 
     def until_datetime(self, dt=None):
-        if dt is None:
-            dt = timezone.now()
-        else:
-            dt = convert_dt_to_aware(dt)
+        dt = timezone.now() if dt is None else convert_dt_to_aware(dt)
         return self.filter(Q(occurring_rule__dt_end__lt=dt) | Q(recurring_rules__begin__lt=dt))
 
 
@@ -309,9 +303,7 @@ class RecurringRule(RuleMixin, models.Model):
     def dt_start(self):
         since = timezone.now()
         recurrence = self.to_rrule().after(since)
-        if recurrence is None:
-            return since
-        return recurrence
+        return since if recurrence is None else recurrence
 
     @property
     def dt_end(self):
@@ -335,7 +327,6 @@ class Alarm(ContentManageable):
 
     @property
     def recipient(self):
-        full_name = self.creator.get_full_name()
-        if full_name:
+        if full_name := self.creator.get_full_name():
             return f"{full_name} <{self.creator.email}>"
         return self.creator.email

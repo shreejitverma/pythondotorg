@@ -23,7 +23,7 @@ class Minutes(ContentManageable):
         verbose_name_plural = 'minutes'
 
     def __str__(self):
-        return "PSF Meeting Minutes %s" % self.date.strftime("%B %d, %Y")
+        return f'PSF Meeting Minutes {self.date.strftime("%B %d, %Y")}'
 
     def get_absolute_url(self):
         return reverse('minutes_detail', kwargs={

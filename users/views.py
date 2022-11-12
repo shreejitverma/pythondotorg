@@ -212,15 +212,11 @@ class UserSponsorshipsDashboard(ListView):
         sponsorships = context["sponsorships"]
         context["active"] = [sp for sp in sponsorships if sp.is_active]
 
-        by_status = []
         inactive = [sp for sp in sponsorships if not sp.is_active]
-        for value, label in Sponsorship.STATUS_CHOICES[::-1]:
-            by_status.append((
-                label, [
-                    sp for sp in inactive
-                    if sp.status == value
-                ]
-            ))
+        by_status = [
+            (label, [sp for sp in inactive if sp.status == value])
+            for value, label in Sponsorship.STATUS_CHOICES[::-1]
+        ]
 
         context["by_status"] = by_status
         return context
@@ -249,11 +245,7 @@ class SponsorshipDetailView(DetailView):
                 pending.append(asset)
 
         provided_assets = BenefitFeature.objects.provided_assets().from_sponsorship(sponsorship)
-        provided = []
-        for asset in provided_assets:
-            if bool(asset.value):
-                provided.append(asset)
-
+        provided = [asset for asset in provided_assets if bool(asset.value)]
         context["required_assets"] = pending
         context["fulfilled_assets"] = fulfilled
         context["provided_assets"] = provided
@@ -291,8 +283,7 @@ class UpdateSponsorshipAssetsView(UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        specific_asset = self.request.GET.get("required_asset", None)
-        if specific_asset:
+        if specific_asset := self.request.GET.get("required_asset", None):
             kwargs["required_assets_ids"] = [specific_asset]
         return kwargs
 
@@ -323,10 +314,7 @@ class ProvidedSponsorshipAssetsView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         provided_assets = BenefitFeature.objects.provided_assets().from_sponsorship(context["sponsorship"])
-        provided = []
-        for asset in provided_assets:
-            if bool(asset.value):
-                provided.append(asset)
+        provided = [asset for asset in provided_assets if bool(asset.value)]
         context["provided_assets"] = provided
         context["provided_asset_id"] = self.request.GET.get("provided_asset", None)
         return context

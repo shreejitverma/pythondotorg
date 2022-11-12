@@ -167,7 +167,7 @@ class SelectSponsorshipApplicationBenefitsViewTests(TestCase):
         SponsorshipPackage.objects.all().update(year=custom_year)
 
         querystring = f"config_year={custom_year}"
-        response = self.client.get(self.url + f"?{querystring}")
+        response = self.client.get(f"{self.url}?{querystring}")
 
         form = response.context["form"]
         self.assertIsNone(response.context["custom_year"])
@@ -184,7 +184,7 @@ class SelectSponsorshipApplicationBenefitsViewTests(TestCase):
         SponsorshipPackage.objects.all().update(year=custom_year)
 
         querystring = f"config_year={custom_year}"
-        response = self.client.get(self.url + f"?{querystring}")
+        response = self.client.get(f"{self.url}?{querystring}")
 
         form = response.context["form"]
         self.assertEqual(custom_year, response.context["custom_year"])

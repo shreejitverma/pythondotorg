@@ -80,7 +80,7 @@ class SponsorshipBenefitModelTests(TestCase):
             quantity=10
         )
 
-        expected_name = f"Benefit (10)"
+        expected_name = "Benefit (10)"
         name = benefit.name_for_display(package=benefit_config.package)
         self.assertEqual(name, expected_name)
         self.assertTrue(benefit.has_tiers)
@@ -469,7 +469,7 @@ class ContractModelTests(TestCase):
         self.assertEqual(contract.revision, 0)
 
         num_updates = 5
-        for i in range(num_updates):
+        for _ in range(num_updates):
             contract.save()
             contract.refresh_from_db()
 

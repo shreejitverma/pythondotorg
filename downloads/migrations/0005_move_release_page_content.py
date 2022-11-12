@@ -30,7 +30,7 @@ def delete_migrated_content(apps, schema_editor):
         try:
             name = release.name
             if 'Release' not in name:
-                name = release.name + ' Release'
+                name = f'{release.name} Release'
             page = Page.objects.get(title=name)
         except (Page.DoesNotExist, Page.MultipleObjectsReturned):
             continue

@@ -439,10 +439,11 @@ class DownloadApiV1ViewsTest(BaseDownloadApiViewsTest, BaseDownloadTests):
         super().setUp()
         self.staff_key = self.staff_user.api_key.key
         self.token_header = 'ApiKey'
-        self.Authorization = '{} {}:{}'.format(
-            self.token_header, self.staff_user.username, self.staff_key,
+        self.Authorization = (
+            f'{self.token_header} {self.staff_user.username}:{self.staff_key}'
         )
-        self.Authorization_invalid = '%s invalid:token' % self.token_header
+
+        self.Authorization_invalid = f'{self.token_header} invalid:token'
 
 
 class DownloadApiV2ViewsTest(BaseDownloadApiViewsTest, BaseDownloadTests, APITestCase):
@@ -453,15 +454,13 @@ class DownloadApiV2ViewsTest(BaseDownloadApiViewsTest, BaseDownloadTests, APITes
         self.staff_key = self.staff_user.auth_token.key
         self.token_header = 'Token'
         self.Authorization = f'{self.token_header} {self.staff_key}'
-        self.Authorization_invalid = '%s invalidtoken' % self.token_header
+        self.Authorization_invalid = f'{self.token_header} invalidtoken'
         self.normal_user = UserFactory(
             username='normaluser',
             password='password',
         )
         self.normal_user_key = self.normal_user.auth_token.key
-        self.Authorization_normal = '{} {}'.format(
-            self.token_header, self.normal_user_key,
-        )
+        self.Authorization_normal = f'{self.token_header} {self.normal_user_key}'
 
     def get_json(self, response):
         return response.data
