@@ -904,7 +904,7 @@ class PreviewContractViewTests(TestCase):
         response = HttpResponse()
         mocked_render.return_value = response
 
-        r = self.client.get(self.url + "?format=docx")
+        r = self.client.get(f"{self.url}?format=docx")
 
         self.assertEqual(r, response)
         self.assertEqual(r.get("X-Frame-Options"), "SAMEORIGIN")

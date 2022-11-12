@@ -13,9 +13,9 @@ class SponsorPublisherPermission(permissions.BasePermission):
     message = 'Must have publisher permission.'
 
     def has_permission(self, request, view):
-        user = request.user
         if request.user.is_superuser or request.user.is_staff:
             return True
+        user = request.user
         return user.has_perm("sponsors.sponsor_publisher")
 
 

@@ -51,10 +51,11 @@ def list_sponsors(logo_place, publisher=PublisherChoices.FOUNDATION.value):
                 ]
             }
 
-        context.update({
+        context |= {
             'packages': SponsorshipPackage.objects.all(),
             'sponsorships_by_package': sponsorships_by_package,
-        })
+        }
+
 
     return context
 

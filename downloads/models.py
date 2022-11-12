@@ -121,9 +121,7 @@ class Release(ContentManageable, NameSlugModel):
 
     def get_version(self):
         version = re.match(r'Python\s([\d.]+)', self.name)
-        if version is not None:
-            return version.group(1)
-        return None
+        return version[1] if version is not None else None
 
     def is_version_at_least(self, min_version_tuple):
         v1 = []
@@ -195,13 +193,15 @@ def update_download_landing_sources_box():
     context = {}
 
     if latest_python2:
-        latest_python2_source = latest_python2.download_file_for_os('source')
-        if latest_python2_source:
+        if latest_python2_source := latest_python2.download_file_for_os(
+            'source'
+        ):
             context['latest_python2_source'] = latest_python2_source
 
     if latest_python3:
-        latest_python3_source = latest_python3.download_file_for_os('source')
-        if latest_python3_source:
+        if latest_python3_source := latest_python3.download_file_for_os(
+            'source'
+        ):
             context['latest_python3_source'] = latest_python3_source
 
     if 'latest_python2_source' not in context or 'latest_python3_source' not in context:

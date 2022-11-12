@@ -16,7 +16,7 @@ templates_path = ['_templates']
 master_doc = 'index'
 
 project = 'Python.org Website'
-copyright = '%s, Python Software Foundation' % time.strftime('%Y')
+copyright = f"{time.strftime('%Y')}, Python Software Foundation"
 
 # The short X.Y version.
 version = '1.0'

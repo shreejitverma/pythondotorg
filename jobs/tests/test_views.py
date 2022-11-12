@@ -90,7 +90,7 @@ class JobsViewTests(TestCase):
         url = reverse('jobs:job_list_mine')
 
         response = self.client.get(url)
-        self.assertRedirects(response, '{}?next={}'.format(reverse('account_login'), url))
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
         username = 'kevinarnold'
         email = 'kevinarnold@example.com'
@@ -548,7 +548,7 @@ class JobsReviewTests(TestCase):
         job = ApprovedJobFactory()
 
         response = self.client.get(url)
-        self.assertRedirects(response, '{}?next={}'.format(reverse('account_login'), url))
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
         self.client.login(username=self.another_username, password=self.another_password)
         response = self.client.get(url)
@@ -585,7 +585,7 @@ class JobsReviewTests(TestCase):
         url = reverse('jobs:job_review')
 
         response = self.client.get(url)
-        self.assertRedirects(response, '{}?next={}'.format(reverse('account_login'), url))
+        self.assertRedirects(response, f"{reverse('account_login')}?next={url}")
 
         self.client.login(username=self.another_username, password=self.another_password)
         response = self.client.get(url)

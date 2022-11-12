@@ -29,19 +29,17 @@ class SelectSponsorshipApplicationBenefitsView(FormView):
         packages = SponsorshipPackage.objects.all()
         benefits_qs = SponsorshipBenefit.objects.select_related("program")
         capacities_met = any(
-            [
-                any([not b.has_capacity for b in benefits_qs.filter(program=p)])
-                for p in programs
-            ]
+            any(not b.has_capacity for b in benefits_qs.filter(program=p))
+            for p in programs
         )
-        kwargs.update(
-            {
-                "benefit_model": SponsorshipBenefit,
-                "sponsorship_packages": packages,
-                "capacities_met": capacities_met,
-                "custom_year": self.get_form_custom_year(),
-            }
-        )
+
+        kwargs |= {
+            "benefit_model": SponsorshipBenefit,
+            "sponsorship_packages": packages,
+            "capacities_met": capacities_met,
+            "custom_year": self.get_form_custom_year(),
+        }
+
         return super().get_context_data(*args, **kwargs)
 
     def get_success_url(self):
@@ -55,8 +53,7 @@ class SelectSponsorshipApplicationBenefitsView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        custom_year = self.get_form_custom_year()
-        if custom_year:
+        if custom_year := self.get_form_custom_year():
             kwargs["year"] = custom_year
         return kwargs
 
@@ -84,9 +81,7 @@ class SelectSponsorshipApplicationBenefitsView(FormView):
 
     def _set_form_data_cookie(self, form, response):
         pkg = form.cleaned_data.get("package", "")
-        data = {
-            "package": "" if not pkg else pkg.id,
-        }
+        data = {"package": pkg.id if pkg else ""}
         for fname, benefits in [
             (f, v)
             for f, v in form.cleaned_data.items()
@@ -112,9 +107,11 @@ class NewSponsorshipApplicationView(FormView):
         return cookies.get_sponsorship_selected_benefits(self.request)
 
     def get(self, *args, **kwargs):
-        if not self.benefits_data:
-            return self._redirect_back_to_benefits()
-        return super().get(*args, **kwargs)
+        return (
+            super().get(*args, **kwargs)
+            if self.benefits_data
+            else self._redirect_back_to_benefits()
+        )
 
     def get_form_kwargs(self, *args, **kwargs):
         form_kwargs = super().get_form_kwargs(*args, **kwargs)
@@ -123,9 +120,7 @@ class NewSponsorshipApplicationView(FormView):
 
     def get_context_data(self, *args, **kwargs):
         package_id = self.benefits_data.get("package")
-        package = (
-            None if not package_id else SponsorshipPackage.objects.get(id=package_id)
-        )
+        package = SponsorshipPackage.objects.get(id=package_id) if package_id else None
         benefits_ids = chain(
             *(self.benefits_data[k] for k in self.benefits_data if k != "package")
         )
@@ -148,14 +143,13 @@ class NewSponsorshipApplicationView(FormView):
         else:
             added_benefits, sponsorship_benefits = sponsorship_benefits, []
 
-        kwargs.update(
-            {
-                "sponsorship_package": package,
-                "sponsorship_benefits": sponsorship_benefits,
-                "added_benefits": added_benefits,
-                "sponsorship_price": price,
-            }
-        )
+        kwargs |= {
+            "sponsorship_package": package,
+            "sponsorship_benefits": sponsorship_benefits,
+            "added_benefits": added_benefits,
+            "sponsorship_price": price,
+        }
+
         return super().get_context_data(*args, **kwargs)
 
     @transaction.atomic

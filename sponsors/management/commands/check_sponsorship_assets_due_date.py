@@ -32,11 +32,12 @@ class Command(BaseCommand):
 
         sponsorships_to_notify = []
         for sponsorship in sponsorships:
-            to_notify = any([
+            to_notify = any(
                 asset.due_date == target_date
                 for asset in req_assets.from_sponsorship(sponsorship)
                 if asset.due_date
-            ])
+            )
+
             if to_notify:
                 sponsorships_to_notify.append(sponsorship)
 
@@ -47,7 +48,7 @@ class Command(BaseCommand):
         user_input = ""
         while user_input != "Y" and ask_input:
             msg = f"Contacts from {len(sponsorships_to_notify)} with pending assets with expiring due date will get " \
-                  f"notified. "
+                      f"notified. "
             msg += "Do you want to proceed? [Y/n]: "
             user_input = input(msg).strip().upper()
             if user_input == "N":

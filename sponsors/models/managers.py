@@ -59,10 +59,10 @@ class SponsorshipCurrentYearQuerySet(QuerySet):
 
 class SponsorContactQuerySet(QuerySet):
     def get_primary_contact(self, sponsor):
-        contact = self.filter(sponsor=sponsor, primary=True).first()
-        if not contact:
+        if contact := self.filter(sponsor=sponsor, primary=True).first():
+            return contact
+        else:
             raise self.model.DoesNotExist()
-        return contact
 
     def filter_by_contact_types(self, primary=False, administrative=False, accounting=False, manager=False):
         if not any([primary, administrative, accounting, manager]):
@@ -127,10 +127,11 @@ class SponsorshipPackageQuerySet(OrderedModelQuerySet):
 class BenefitFeatureQuerySet(PolymorphicQuerySet):
 
     def delete(self):
-        if not self.polymorphic_disabled:
-            return self.non_polymorphic().delete()
-        else:
-            return super().delete()
+        return (
+            super().delete()
+            if self.polymorphic_disabled
+            else self.non_polymorphic().delete()
+        )
 
     def from_sponsorship(self, sponsorship):
         return self.filter(sponsor_benefit__sponsorship=sponsorship).select_related("sponsor_benefit__sponsorship")

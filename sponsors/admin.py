@@ -34,9 +34,7 @@ class AssetsInline(GenericTabularInline):
     readonly_fields = ["internal_name", "user_submitted_info", "value"]
 
     def value(self, obj=None):
-        if not obj or not obj.value:
-            return ""
-        return obj.value
+        return "" if not obj or not obj.value else obj.value
 
     value.short_description = "Submitted information"
 
@@ -187,9 +185,7 @@ class SponsorshipPackageAdmin(OrderedModelAdmin):
         return readonly
 
     def get_prepopulated_fields(self, request, obj=None):
-        if not obj:
-            return {'slug': ['name']}
-        return {}
+        return {} if obj else {'slug': ['name']}
 
 
 class SponsorContactInline(admin.TabularInline):
@@ -237,9 +233,7 @@ class SponsorBenefitInline(admin.TabularInline):
         return []
 
     def has_delete_permission(self, request, obj=None):
-        if not obj:
-            return True
-        return obj.open_for_editing
+        return obj.open_for_editing if obj else True
 
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset(*args, **kwargs)
@@ -281,9 +275,11 @@ class SponsorshipStatusListFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         status = self.value()
         # exclude rejected ones by default
-        if not status:
-            return queryset.exclude(status=Sponsorship.REJECTED)
-        return queryset.filter(status=status)
+        return (
+            queryset.filter(status=status)
+            if status
+            else queryset.exclude(status=Sponsorship.REJECTED)
+        )
 
     def choices(self, changelist):
         choices = list(super().choices(changelist))
@@ -373,9 +369,15 @@ class SponsorshipAdmin(admin.ModelAdmin):
         fieldsets = []
         for title, cfg in super().get_fieldsets(request, obj):
             # disable collapse option in case of sponsorships with customizations
-            if title == "User Customizations" and obj:
-                if obj.user_customizations["added_by_user"] or obj.user_customizations["removed_by_user"]:
-                    cfg["classes"] = []
+            if (
+                title == "User Customizations"
+                and obj
+                and (
+                    obj.user_customizations["added_by_user"]
+                    or obj.user_customizations["removed_by_user"]
+                )
+            ):
+                cfg["classes"] = []
             fieldsets.append((title, cfg))
         return fieldsets
 
@@ -506,9 +508,8 @@ class SponsorshipAdmin(admin.ModelAdmin):
     get_sponsor_web_logo.short_description = "Web Logo"
 
     def get_sponsor_print_logo(self, obj):
-        img = obj.sponsor.print_logo
         html = ""
-        if img:
+        if img := obj.sponsor.print_logo:
             html = "{% load thumbnail %}{% thumbnail img '150x150' format='PNG' quality=100 as im %}<img src='{{ im.url}}'/>{% endthumbnail %}"
             template = Template(html)
             context = Context({'img': img})
@@ -547,10 +548,10 @@ class SponsorshipAdmin(admin.ModelAdmin):
         primary = [c for c in contacts if c.primary]
         not_primary = [c for c in contacts if not c.primary]
         if primary:
-            html = "<b>Primary contacts</b><ul>"
-            html += "".join(
+            html = "<b>Primary contacts</b><ul>" + "".join(
                 [f"<li>{c.name}: {c.email} / {c.phone}</li>" for c in primary]
             )
+
             html += "</ul>"
         if not_primary:
             html += "<b>Other contacts</b><ul>"
@@ -564,25 +565,21 @@ class SponsorshipAdmin(admin.ModelAdmin):
 
     def get_custom_benefits_added_by_user(self, obj):
         benefits = obj.user_customizations["added_by_user"]
-        if not benefits:
-            return "---"
-
-        html = "".join(
-            [f"<p>{b}</p>" for b in benefits]
+        return (
+            mark_safe("".join([f"<p>{b}</p>" for b in benefits]))
+            if benefits
+            else "---"
         )
-        return mark_safe(html)
 
     get_custom_benefits_added_by_user.short_description = "Added by User"
 
     def get_custom_benefits_removed_by_user(self, obj):
         benefits = obj.user_customizations["removed_by_user"]
-        if not benefits:
-            return "---"
-
-        html = "".join(
-            [f"<p>{b}</p>" for b in benefits]
+        return (
+            mark_safe("".join([f"<p>{b}</p>" for b in benefits]))
+            if benefits
+            else "---"
         )
-        return mark_safe(html)
 
     get_custom_benefits_removed_by_user.short_description = "Removed by User"
 
@@ -852,7 +849,7 @@ class SponsorEmailNotificationTemplateAdmin(BaseEmailTemplateAdmin):
         help_texts = {
             "content": SPONSOR_TEMPLATE_HELP_TEXT,
         }
-        kwargs.update({"help_texts": help_texts})
+        kwargs["help_texts"] = help_texts
         return super().get_form(request, obj, **kwargs)
 
 
@@ -869,9 +866,7 @@ class AssetTypeListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         asset_type = self.assets_types_mapping.get(self.value())
-        if not asset_type:
-            return queryset
-        return queryset.instance_of(asset_type)
+        return queryset.instance_of(asset_type) if asset_type else queryset
 
 
 class AssociatedBenefitListFilter(admin.SimpleListFilter):
@@ -910,9 +905,7 @@ class AssetContentTypeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         value = self.value()
-        if not value:
-            return queryset
-        return queryset.filter(content_type=value)
+        return queryset.filter(content_type=value) if value else queryset
 
 
 class AssetWithOrWithoutValueFilter(admin.SimpleListFilter):

@@ -147,8 +147,7 @@ class AssetConfigurationMixin:
     def get_clone_kwargs(self, new_benefit):
         kwargs = super().get_clone_kwargs(new_benefit)
         kwargs["internal_name"] = f"{self.internal_name}_{new_benefit.year}"
-        due_date = kwargs.get("due_date")
-        if due_date:
+        if due_date := kwargs.get("due_date"):
             kwargs["due_date"] = due_date.replace(year=new_benefit.year)
         return kwargs
 
@@ -271,13 +270,13 @@ class AssetMixin:
     @property
     def user_edit_url(self):
         url = reverse("users:update_sponsorship_assets", args=[self.sponsor_benefit.sponsorship.pk])
-        return url + f"?required_asset={self.pk}"
+        return f"{url}?required_asset={self.pk}"
 
 
     @property
     def user_view_url(self):
         url = reverse("users:view_provided_sponsorship_assets", args=[self.sponsor_benefit.sponsorship.pk])
-        return url + f"?provided_asset={self.pk}"
+        return f"{url}?provided_asset={self.pk}"
 
 class RequiredAssetMixin(AssetMixin):
     """
@@ -333,10 +332,11 @@ class BenefitFeatureConfiguration(PolymorphicModel):
         for field in benefit_fields:
             # Skip the OneToOne rel from the base class to BenefitFeatureConfiguration base class
             # since this field only exists in child models
-            if BenefitFeatureConfiguration is getattr(field, 'related_model', None):
-                continue
-            # Skip if field config is being externally overwritten
-            elif field.name in kwargs:
+            if (
+                BenefitFeatureConfiguration
+                is getattr(field, 'related_model', None)
+                or field.name in kwargs
+            ):
                 continue
             kwargs[field.name] = getattr(self, field.name)
         return kwargs
@@ -359,9 +359,7 @@ class BenefitFeatureConfiguration(PolymorphicModel):
         """
         BenefitFeatureClass = self.benefit_feature_class
         kwargs = self.get_benefit_feature_kwargs(**kwargs)
-        if kwargs is None:
-            return None
-        return BenefitFeatureClass(**kwargs)
+        return None if kwargs is None else BenefitFeatureClass(**kwargs)
 
     def display_modifier(self, name, **kwargs):
         return name
@@ -446,7 +444,7 @@ class EmailTargetableConfiguration(BaseEmailTargetable, BenefitFeatureConfigurat
         return EmailTargetable
 
     def __str__(self):
-        return f"Email targeatable configuration"
+        return "Email targeatable configuration"
 
 
 class RequiredImgAssetConfiguration(AssetConfigurationMixin, BaseRequiredImgAsset, BenefitFeatureConfiguration):
@@ -456,7 +454,7 @@ class RequiredImgAssetConfiguration(AssetConfigurationMixin, BaseRequiredImgAsse
         constraints = [UniqueConstraint(fields=["internal_name"], name="uniq_img_asset_cfg")]
 
     def __str__(self):
-        return f"Require image configuration"
+        return "Require image configuration"
 
     @property
     def benefit_feature_class(self):
@@ -471,7 +469,7 @@ class RequiredTextAssetConfiguration(AssetConfigurationMixin, BaseRequiredTextAs
         constraints = [UniqueConstraint(fields=["internal_name"], name="uniq_text_asset_cfg")]
 
     def __str__(self):
-        return f"Require text configuration"
+        return "Require text configuration"
 
     @property
     def benefit_feature_class(self):
@@ -489,7 +487,7 @@ class RequiredResponseAssetConfiguration(
         ]
 
     def __str__(self):
-        return f"Require response configuration"
+        return "Require response configuration"
 
     @property
     def benefit_feature_class(self):
@@ -505,7 +503,7 @@ class ProvidedTextAssetConfiguration(
         constraints = [UniqueConstraint(fields=["internal_name"], name="uniq_provided_text_asset_cfg")]
 
     def __str__(self):
-        return f"Provided text configuration"
+        return "Provided text configuration"
 
     @property
     def benefit_feature_class(self):
@@ -520,7 +518,7 @@ class ProvidedFileAssetConfiguration(AssetConfigurationMixin, BaseProvidedFileAs
         constraints = [UniqueConstraint(fields=["internal_name"], name="uniq_provided_file_asset_cfg")]
 
     def __str__(self):
-        return f"Provided File configuration"
+        return "Provided File configuration"
 
     @property
     def benefit_feature_class(self):
@@ -586,7 +584,7 @@ class EmailTargetable(BaseEmailTargetable, BenefitFeature):
         verbose_name_plural = "Email Targetable Benefits"
 
     def __str__(self):
-        return f"Email targeatable"
+        return "Email targeatable"
 
 
 class RequiredImgAsset(RequiredAssetMixin, BaseRequiredImgAsset, BenefitFeature):
@@ -595,7 +593,7 @@ class RequiredImgAsset(RequiredAssetMixin, BaseRequiredImgAsset, BenefitFeature)
         verbose_name_plural = "Require Images"
 
     def __str__(self):
-        return f"Require image"
+        return "Require image"
 
     def as_form_field(self, **kwargs):
         help_text = kwargs.pop("help_text", self.help_text)
@@ -610,7 +608,7 @@ class RequiredTextAsset(RequiredAssetMixin, BaseRequiredTextAsset, BenefitFeatur
         verbose_name_plural = "Require Texts"
 
     def __str__(self):
-        return f"Require text"
+        return "Require text"
 
     def as_form_field(self, **kwargs):
         help_text = kwargs.pop("help_text", self.help_text)
@@ -629,7 +627,7 @@ class RequiredResponseAsset(RequiredAssetMixin, BaseRequiredResponseAsset, Benef
         verbose_name_plural = "Required Responses"
 
     def __str__(self):
-        return f"Require response"
+        return "Require response"
 
     def as_form_field(self, **kwargs):
         help_text = kwargs.pop("help_text", self.help_text)
@@ -653,4 +651,4 @@ class ProvidedFileAsset(ProvidedAssetMixin, BaseProvidedFileAsset, BenefitFeatur
         verbose_name_plural = "Provided Files"
 
     def __str__(self):
-        return f"Provided file"
+        return "Provided file"

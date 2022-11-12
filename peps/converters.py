@@ -105,10 +105,7 @@ def convert_pep_page(pep_number, content):
         data['title'] = soup.title.text
 
         if not re.search(r'PEP \d+', data['title']):
-            data['title'] = 'PEP {} -- {}'.format(
-                pep_number_humanize,
-                soup.title.text,
-            )
+            data['title'] = f'PEP {pep_number_humanize} -- {soup.title.text}'
 
         header = soup.body.find('div', class_="header")
         header, data = fix_headers(header, data)
@@ -128,12 +125,8 @@ def convert_pep_page(pep_number, content):
         soup, data = fix_headers(soup, data)
         if not data['title']:
             data['title'] = f"PEP {pep_number_humanize} -- "
-        else:
-            if not re.search(r'PEP \d+', data['title']):
-                data['title'] = "PEP {} -- {}".format(
-                    pep_number_humanize,
-                    data['title'],
-                )
+        elif not re.search(r'PEP \d+', data['title']):
+            data['title'] = f"PEP {pep_number_humanize} -- {data['title']}"
 
         data['content'] = str(soup)
 
@@ -144,13 +137,8 @@ def convert_pep_page(pep_number, content):
     pep_href_re = re.compile(r'pep-(\d+)\.html')
 
     for b in body_links:
-        m = pep_href_re.search(b.attrs['href'])
-
-        # Skip anything not matching 'pep-XXXX.html'
-        if not m:
-            continue
-
-        b.attrs['href'] = f'/dev/peps/pep-{m.group(1)}/'
+        if m := pep_href_re.search(b.attrs['href']):
+            b.attrs['href'] = f'/dev/peps/pep-{m[1]}/'
 
     # Return early if 'html' or 'body' return None.
     if pep_content.html is None or pep_content.body is None:
@@ -181,8 +169,10 @@ def get_pep_page(artifact_path, pep_number, commit=True):
         artifact_path, f'pep-{pep_number}.rst',
     )
     pep_ext = '.rst' if os.path.exists(pep_rst_source) else '.txt'
-    source_link = 'https://github.com/python/peps/blob/master/pep-{}{}'.format(
-        pep_number, pep_ext)
+    source_link = (
+        f'https://github.com/python/peps/blob/master/pep-{pep_number}{pep_ext}'
+    )
+
     pep_content['content'] += """Source: <a href="{0}">{0}</a>""".format(source_link)
 
     pep_page, _ = Page.objects.get_or_create(path=pep_url(pep_number))

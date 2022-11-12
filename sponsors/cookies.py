@@ -4,8 +4,9 @@ BENEFITS_COOKIE_NAME = "sponsorship_selected_benefits"
 
 
 def get_sponsorship_selected_benefits(request):
-    sponsorship_selected_benefits = request.COOKIES.get(BENEFITS_COOKIE_NAME)
-    if sponsorship_selected_benefits:
+    if sponsorship_selected_benefits := request.COOKIES.get(
+        BENEFITS_COOKIE_NAME
+    ):
         try:
             return json.loads(sponsorship_selected_benefits)
         except json.JSONDecodeError:

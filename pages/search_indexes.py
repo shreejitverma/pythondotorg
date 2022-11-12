@@ -20,10 +20,9 @@ class PageIndex(indexes.SearchIndex, indexes.Indexable):
 
     def prepare_description(self, obj):
         """ Create a description if none exists """
-        if obj.description:
-            return obj.description
-        else:
-            return striptags(truncatewords_html(obj.content.rendered, 50))
+        return obj.description or striptags(
+            truncatewords_html(obj.content.rendered, 50)
+        )
 
     def index_queryset(self, using=None):
         """ Only index published pages """

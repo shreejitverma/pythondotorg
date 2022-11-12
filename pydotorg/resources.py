@@ -49,7 +49,7 @@ class ApiKeyOrGuestAuthentication(ApiKeyAuthentication):
             return super().get_identifier(request)
         else:
             # returns a combination of IP address and hostname.
-            return "{}_{}".format(request.META.get('REMOTE_ADDR', 'noaddr'), request.META.get('REMOTE_HOST', 'nohost'))
+            return f"{request.META.get('REMOTE_ADDR', 'noaddr')}_{request.META.get('REMOTE_HOST', 'nohost')}"
 
     def check_active(self, user):
         return True
@@ -103,16 +103,18 @@ class OnlyPublishedAuthorization(StaffAuthorization):
     Only staff users can see unpublished objects.
     """
     def read_list(self, object_list, bundle):
-        if not bundle.request.user.is_staff:
-            return object_list.filter(is_published=True)
-        else:
-            return super().read_list(object_list, bundle)
+        return (
+            super().read_list(object_list, bundle)
+            if bundle.request.user.is_staff
+            else object_list.filter(is_published=True)
+        )
 
     def read_detail(self, object_list, bundle):
-        if not bundle.request.user.is_staff:
-            return bundle.obj.is_published
-        else:
-            return super().read_detail(object_list, bundle)
+        return (
+            super().read_detail(object_list, bundle)
+            if bundle.request.user.is_staff
+            else bundle.obj.is_published
+        )
 
 
 class GenericResource(ModelResource):

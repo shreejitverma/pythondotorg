@@ -233,12 +233,13 @@ class Sponsorship(models.Model):
         sponsorship = cls.objects.create(
             submited_by=submited_by,
             sponsor=sponsor,
-            level_name="" if not package else package.name,
+            level_name=package.name if package else "",
             package=package,
-            sponsorship_fee=None if not package else package.sponsorship_amount,
+            sponsorship_fee=package.sponsorship_amount if package else None,
             for_modified_package=for_modified_package,
             year=SponsorshipCurrentYear.get_year(),
         )
+
 
         for benefit in benefits:
             added_by_user = for_modified_package and benefit not in package_benefits
@@ -259,9 +260,7 @@ class Sponsorship(models.Model):
 
     @property
     def verbose_sponsorship_fee(self):
-        if self.sponsorship_fee is None:
-            return 0
-        return num2words(self.sponsorship_fee)
+        return 0 if self.sponsorship_fee is None else num2words(self.sponsorship_fee)
 
     @property
     def agreed_fee(self):
@@ -294,7 +293,7 @@ class Sponsorship(models.Model):
             msg = f"Can't approve a {self.get_status_display()} sponsorship."
             raise InvalidStatusException(msg)
         if start_date >= end_date:
-            msg = f"Start date greater or equal than end date"
+            msg = "Start date greater or equal than end date"
             raise SponsorshipInvalidDateRangeException(msg)
         self.status = self.APPROVED
         self.start_date = start_date
@@ -333,10 +332,10 @@ class Sponsorship(models.Model):
 
     @property
     def contract_admin_url(self):
-        if not self.contract:
-            return ""
-        return reverse(
-            "admin:sponsors_contract_change", args=[self.contract.pk]
+        return (
+            reverse("admin:sponsors_contract_change", args=[self.contract.pk])
+            if self.contract
+            else ""
         )
 
     @property
@@ -473,18 +472,18 @@ class SponsorshipBenefit(OrderedModel):
     def unavailability_message(self):
         if self.package_only:
             return self.PACKAGE_ONLY_MESSAGE
-        if not self.has_capacity:
-            return self.NO_CAPACITY_MESSAGE
-        return ""
+        return "" if self.has_capacity else self.NO_CAPACITY_MESSAGE
 
     @property
     def has_capacity(self):
-        if self.unavailable:
-            return False
-        return not (
-            self.remaining_capacity is not None
-            and self.remaining_capacity <= 0
-            and not self.soft_capacity
+        return (
+            False
+            if self.unavailable
+            else bool(
+                self.remaining_capacity is None
+                or self.remaining_capacity > 0
+                or self.soft_capacity
+            )
         )
 
     @property

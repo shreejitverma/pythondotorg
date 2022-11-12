@@ -31,4 +31,4 @@ class Command(BaseCommand):
         for sponsorship in qs:
             Contract.new(sponsorship)
 
-        print(f"Done!")
+        print("Done!")

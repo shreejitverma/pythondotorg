@@ -91,7 +91,7 @@ class PipelineManifestStorage(PipelineMixin, ManifestFilesMixin, StaticFilesStor
 
     def is_in_comment(self, pos, comments):
         for start, end in comments:
-            if start < pos and pos < end:
+            if start < pos < end:
                 return True
             if pos < start:
                 return False
@@ -156,13 +156,10 @@ class PipelineManifestStorage(PipelineMixin, ManifestFilesMixin, StaticFilesStor
                         substitutions = False
                     processed = True
 
-                if not processed:
-                    # or handle the case in which neither processing nor
-                    # a change to the original file happened
-                    if not hashed_file_exists:
-                        processed = True
-                        saved_name = self._save(hashed_name, original_file)
-                        hashed_name = self.clean_name(saved_name)
+                if not processed and not hashed_file_exists:
+                    processed = True
+                    saved_name = self._save(hashed_name, original_file)
+                    hashed_name = self.clean_name(saved_name)
 
                 # and then set the cache accordingly
                 hashed_files[hash_key] = hashed_name

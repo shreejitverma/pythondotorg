@@ -22,17 +22,16 @@ def parse_location(user):
         return ''
 
     if membership.city:
-        path += "%s" % (membership.city)
+        path += f"{membership.city}"
     if membership.region:
         if membership.city:
             path += ", "
-        path += "%s" % (membership.region)
+        path += f"{membership.region}"
     if membership.country:
         if membership.region:
             path += " "
-        else:
-            if membership.city:
-                path += ", "
-        path += "%s" % (membership.country)
+        elif membership.city:
+            path += ", "
+        path += f"{membership.country}"
 
     return path

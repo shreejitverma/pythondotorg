@@ -42,13 +42,14 @@ class NominationCreateForm(NominationForm):
 
     def clean_self_nomination(self):
         data = self.cleaned_data["self_nomination"]
-        if data:
-            if not self.request.user.first_name or not self.request.user.last_name:
-                raise forms.ValidationError(
-                    mark_safe(
-                        'You must set your First and Last name in your <a href="/users/edit/">User Profile</a> to self nominate.'
-                    )
+        if data and (
+            not self.request.user.first_name or not self.request.user.last_name
+        ):
+            raise forms.ValidationError(
+                mark_safe(
+                    'You must set your First and Last name in your <a href="/users/edit/">User Profile</a> to self nominate.'
                 )
+            )
 
         return data
 

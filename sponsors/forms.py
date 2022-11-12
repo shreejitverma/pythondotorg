@@ -101,8 +101,9 @@ class SponsorshipsBenefitsForm(forms.Form):
         """
         conflicts = {}
         for benefit in SponsorshipBenefit.objects.with_conflicts():
-            benefits_conflicts = benefit.conflicts.values_list("id", flat=True)
-            if benefits_conflicts:
+            if benefits_conflicts := benefit.conflicts.values_list(
+                "id", flat=True
+            ):
                 conflicts[benefit.id] = list(benefits_conflicts)
         return conflicts
 
@@ -113,10 +114,10 @@ class SponsorshipsBenefitsForm(forms.Form):
         )
         a_la_carte = cleaned_data.get("a_la_carte_benefits", [])
         if include_a_la_carte:
-            benefits.extend([b for b in a_la_carte])
+            benefits.extend(list(a_la_carte))
         standalone = cleaned_data.get("standalone_benefits", [])
         if include_standalone:
-            benefits.extend([b for b in standalone])
+            benefits.extend(list(standalone))
         return benefits
 
     def get_package(self):
@@ -275,18 +276,22 @@ class SponsorshipApplicationForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         sponsor = self.data.get("sponsor")
-        if not sponsor and not self.contacts_formset.is_valid():
-            msg = "Errors with contact(s) information"
-            if not self.contacts_formset.errors:
-                msg = "You have to enter at least one contact"
-            raise forms.ValidationError(msg)
-        elif not sponsor:
-            has_primary_contact = any(
-                f.cleaned_data.get("primary") for f in self.contacts_formset.forms
-            )
-            if not has_primary_contact:
-                msg = "You have to mark at least one contact as the primary one."
+        if not sponsor:
+            if not self.contacts_formset.is_valid():
+                msg = (
+                    "Errors with contact(s) information"
+                    if self.contacts_formset.errors
+                    else "You have to enter at least one contact"
+                )
+
                 raise forms.ValidationError(msg)
+            else:
+                has_primary_contact = any(
+                    f.cleaned_data.get("primary") for f in self.contacts_formset.forms
+                )
+                if not has_primary_contact:
+                    msg = "You have to mark at least one contact as the primary one."
+                    raise forms.ValidationError(msg)
 
     def clean_sponsor(self):
         sponsor = self.cleaned_data.get("sponsor")
@@ -311,10 +316,12 @@ class SponsorshipApplicationForm(forms.Form):
 
     def clean_web_logo(self):
         web_logo = self.cleaned_data.get("web_logo", "")
-        sponsor = self.data.get("sponsor")
-        if not sponsor and not web_logo:
+        if sponsor := self.data.get("sponsor"):
+            return web_logo
+        elif web_logo:
+            return web_logo
+        else:
             raise forms.ValidationError("This field is required.")
-        return web_logo
 
     def clean_primary_phone(self):
         primary_phone = self.cleaned_data.get("primary_phone", "")
@@ -352,8 +359,7 @@ class SponsorshipApplicationForm(forms.Form):
         return country.strip()
 
     def save(self):
-        selected_sponsor = self.cleaned_data.get("sponsor")
-        if selected_sponsor:
+        if selected_sponsor := self.cleaned_data.get("sponsor"):
             return selected_sponsor
 
         sponsor = Sponsor.objects.create(
@@ -382,9 +388,7 @@ class SponsorshipApplicationForm(forms.Form):
 
     @cached_property
     def user_with_previous_sponsors(self):
-        if not self.user:
-            return False
-        return self.fields["sponsor"].queryset.exists()
+        return self.fields["sponsor"].queryset.exists() if self.user else False
 
 
 class SponsorshipReviewAdminForm(forms.ModelForm):
@@ -451,9 +455,7 @@ class SponsorBenefitAdminInlineForm(forms.ModelForm):
         else:
             self.instance.refresh_from_db()
 
-        self.instance.benefit_internal_value = benefit.internal_value
-        if value:
-            self.instance.benefit_internal_value = value
+        self.instance.benefit_internal_value = value or benefit.internal_value
         updated_sponsorship_benefit = False
         if benefit.pk != self.instance.sponsorship_benefit_id:
             updated_sponsorship_benefit = True
@@ -646,9 +648,10 @@ class SponsorRequiredAssetsForm(forms.Form):
         fields = {}
         ordered_assets = sorted(
             self.required_assets,
-            key=lambda x: (-int(bool(x.value)), x.due_date if x.due_date else datetime.date.min),
+            key=lambda x: (-int(bool(x.value)), x.due_date or datetime.date.min),
             reverse=True,
         )
+
 
         for required_asset in ordered_assets:
             value = required_asset.value
